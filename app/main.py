@@ -27,12 +27,13 @@ def model_predict(model_name: str, img, k: int):
         test_image = tf.keras.preprocessing.image.load_img(
             img, target_size=(md.IMG_HEIGHT, md.IMG_WIDTH))
     elif type(img) == bytes:
-        test_image = Image.open(io.BytesIO(img))
+        test_image = Image.open(io.BytesIO(img)).convert('RGB')
         test_image = test_image.resize((md.IMG_HEIGHT, md.IMG_WIDTH))
         test_image = np.array(test_image)
     else:
         # resize the image to the input dimensions of the model
         test_image = img.resize((md.IMG_HEIGHT, md.IMG_WIDTH))
+    
     test_image = tf.keras.preprocessing.image.img_to_array(test_image)
     test_image = np.expand_dims(test_image, axis=0)
     test_image = tf.keras.applications.mobilenet_v2.preprocess_input(
