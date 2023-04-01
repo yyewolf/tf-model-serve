@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:latest
+FROM armswdev/tensorflow-arm-neoverse:latest
 RUN pip install --upgrade pip
 RUN pip install numpy Pillow numpy fastapi pydantic uvicorn python-multipart
 
