@@ -39,8 +39,24 @@ def model_predict(model_name: str, img, k: int):
     
     # Remove background here
     test_image = remove_background(test_image)
-    # Resize using numpy
-    test_image = np.resize(test_image, (md.IMG_HEIGHT, md.IMG_WIDTH, 3))
+    
+    h, w, c = test_image.shape
+    
+    # Compute the amount of padding needed vertically and horizontally
+    pad_h = max(md.IMG_HEIGHT - h, 0)
+    pad_w = max(md.IMG_WIDTH - w, 0)
+    
+    # Compute the amount of padding needed on the top, bottom, left, and right sides
+    top = pad_h // 2
+    bottom = pad_h - top
+    left = pad_w // 2
+    right = pad_w - left
+    
+    # Pad the array with zeros on all sides
+    padded_array = np.pad(test_image, ((top, bottom), (left, right), (0, 0)), mode='constant')
+    
+    # Crop the array to the desired size, centered around the original content
+    test_image = padded_array[(pad_h // 2):(pad_h // 2 + h), (pad_w // 2):(pad_w // 2 + w), :]
     
     test_image = np.expand_dims(test_image, axis=0)
     test_image = tf.keras.applications.mobilenet_v2.preprocess_input(
