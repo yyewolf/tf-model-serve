@@ -1,3 +1,4 @@
+from app.background import remove_background
 import tensorflow as tf
 import numpy as np
 from app.model import Model
@@ -35,6 +36,10 @@ def model_predict(model_name: str, img, k: int):
         test_image = img.resize((md.IMG_HEIGHT, md.IMG_WIDTH))
     
     test_image = tf.keras.preprocessing.image.img_to_array(test_image)
+    
+    # Remove background here
+    test_image = remove_background(test_image)
+    
     test_image = np.expand_dims(test_image, axis=0)
     test_image = tf.keras.applications.mobilenet_v2.preprocess_input(
         test_image)
