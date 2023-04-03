@@ -34,11 +34,13 @@ def model_predict(model_name: str, img, k: int):
     else:
         # resize the image to the input dimensions of the model
         test_image = img.resize((md.IMG_HEIGHT, md.IMG_WIDTH))
-    
+
     test_image = tf.keras.preprocessing.image.img_to_array(test_image)
     
     # Remove background here
     test_image = remove_background(test_image)
+    # Resize using numpy
+    test_image = np.resize(test_image, (md.IMG_HEIGHT, md.IMG_WIDTH, 3))
     
     test_image = np.expand_dims(test_image, axis=0)
     test_image = tf.keras.applications.mobilenet_v2.preprocess_input(
