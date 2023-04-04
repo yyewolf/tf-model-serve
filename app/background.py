@@ -56,5 +56,5 @@ def remove_background(img):
         extreme_points[3] = np.maximum(extreme_points[3], [contour_max_x, contour_max_y])
     
     # crop 
-    cropped = img[extreme_points[0][1]:extreme_points[1][1], extreme_points[2][0]:extreme_points[3][0]]
+    cropped = masked[extreme_points[0][1]:extreme_points[1][1], extreme_points[2][0]:extreme_points[3][0]]
     return cropped
