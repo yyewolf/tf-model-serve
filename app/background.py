@@ -2,8 +2,10 @@ import numpy as np
 import cv2
 import rembg
 
+my_session = rembg.new_session("u2netp")
+
 def remove_background(img):
-    img = rembg.remove(img)
+    img = rembg.remove(img, session=my_session, post_process_mask=True)
     thresh = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)[1]
     gray = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
     # convert to CV_8UC1

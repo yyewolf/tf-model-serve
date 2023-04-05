@@ -7,6 +7,7 @@ from PIL import Image
 import io
 import os
 import cv2
+import time
 
 app = FastAPI()
 
@@ -52,6 +53,7 @@ def model_predict(model_name: str, img, k: int):
 
 
 def background_remove(model_name: str, img):
+    start = time.time()
     md = models[model_name]
     test_image = Image.open(io.BytesIO(img)).convert('RGB')
     test_image = np.array(test_image)
@@ -73,6 +75,9 @@ def background_remove(model_name: str, img):
     img = Image.fromarray(resized_image)
     b = io.BytesIO()
     img.save(b, format="PNG")
+    end = time.time()
+    ms = (end - start) * 1000
+    print(f"background_remove took {ms}ms")
     return b.getvalue()
 
 
