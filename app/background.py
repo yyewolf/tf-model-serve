@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import rembg
 
-my_session = rembg.new_session("u2netp")
+my_session = rembg.new_session("u2net")
 
 def remove_background(img):
     img = rembg.remove(img, session=my_session, post_process_mask=True)
