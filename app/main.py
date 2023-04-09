@@ -1,3 +1,4 @@
+from app.crop import perfect_crop
 from app.background import remove_background
 import tensorflow as tf
 import numpy as np
@@ -12,7 +13,6 @@ import time
 app = FastAPI()
 
 models = {}
-
 
 def load_model(name: str):
     models[name] = Model(name)
@@ -51,7 +51,6 @@ def model_predict(model_name: str, img, k: int):
         output.append({"label": i[0], "probability": float(i[1])})
     return output
 
-
 def background_remove(model_name: str, img):
     start = time.time()
     md = models[model_name]
@@ -80,6 +79,33 @@ def background_remove(model_name: str, img):
     print(f"background_remove took {ms}ms")
     return b.getvalue()
 
+def crop_model(model_name: str, img):
+    start = time.time()
+    md = models[model_name]
+    test_image = Image.open(io.BytesIO(img))
+    test_image = np.array(test_image)
+    test_image = perfect_crop(test_image)
+ 
+    # aimed width is md.IMG_WIDTH, aimed height is md.IMG_HEIGHT
+    if test_image.shape[0] > test_image.shape[1]:
+        # height is greater than width
+        pad_size = (test_image.shape[0] - test_image.shape[1]) // 2
+        padded_image = cv2.copyMakeBorder(test_image, 0, 0, pad_size, pad_size, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+    else:
+        # width is greater than height
+        pad_size = (test_image.shape[1] - test_image.shape[0]) // 2
+        padded_image = cv2.copyMakeBorder(test_image, pad_size, pad_size, 0, 0, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+
+    resized_image = cv2.resize(padded_image, (md.IMG_WIDTH, md.IMG_HEIGHT))
+        
+    # convert back into bytes to return it
+    img = Image.fromarray(resized_image)
+    b = io.BytesIO()
+    img.save(b, format="PNG")
+    end = time.time()
+    ms = (end - start) * 1000
+    print(f"perfect_crop took {ms}ms")
+    return b.getvalue()
 
 load_models()
 
@@ -115,8 +141,19 @@ async def predict(model: str, upload: bytes = File(...), k: int = 3):
         "content": {"image/png": {}}
     }
 }, response_class=Response)
-async def predict(model: str, upload: bytes = File(...)):
+async def transform_bg(model: str, upload: bytes = File(...)):
     # Get the image from the request
     if not upload:
         return {"message": "No upload file sent"}
     return Response(content=background_remove(model, upload), media_type="image/png")
+
+@app.post("/transforms/{model}/perfect_crop", responses={
+    200: {
+        "content": {"image/png": {}}
+    }
+}, response_class=Response)
+async def crop(model: str, upload: bytes = File(...)):
+    # Get the image from the request
+    if not upload:
+        return {"message": "No upload file sent"}
+    return Response(content=crop_model(model, upload), media_type="image/png")
